@@ -41,7 +41,7 @@ public class FilmService implements IDao<Film>{
 			
 			Film filmId = new Film();
 			
-			String filmInfos = "SELECT category.name, language.name FROM film JOIN film_category ON film.film_id = film_category.film_id JOIN category ON film_category.category_id = category.category_id JOIN language ON film.language_id = language.language_id "
+			String filmInfos = "SELECT film.title, category.name, language.name FROM film JOIN film_category ON film.film_id = film_category.film_id JOIN category ON film_category.category_id = category.category_id JOIN language ON film.language_id = language.language_id "
 					+ "WHERE film.film_id ="+id+";";
 			String tableauActeur = "SELECT actor.actor_id, actor.first_name, actor.last_name FROM `film` JOIN film_category ON film.film_id = film_category.film_id JOIN category ON film_category.category_id = category.category_id JOIN film_actor ON film.film_id = film_actor.film_id JOIN actor ON film_actor.actor_id = actor.actor_id JOIN language ON film.language_id = language.language_id "
 			+ "WHERE film.film_id ="+id+";";
@@ -49,6 +49,9 @@ public class FilmService implements IDao<Film>{
 			ResultSet rs = statement.executeQuery(filmInfos);
 			
 			while(rs.next()) {
+				
+				String title = rs.getString("film.title");
+				filmId.setTitle(title);
 				
 				String category = rs.getString("category.name");
 				filmId.setFilm_category(category);

@@ -1,12 +1,9 @@
 package AccessBdd;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
+
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Scanner;
 
-import connexionBdd.ConnectionUtils;
 import fr.trainningSql.dao.ActeurService;
 import fr.trainningSql.dao.FilmService;
 import fr.trainningSql.model.Acteur;
@@ -69,22 +66,26 @@ public class QueryDataExample {
 
 					int j = -1;
 					int count = 0;
+					while(count != acteur.getListeDefilm().size()) {
+						for (Film filmItem : acteur.getListeDefilm()) {
+							j++;
 
-					for (Film filmItem : acteur.getListeDefilm()) {
-						j++;
-
-						if (j == 5) {
-							System.out.println("suivant y/n");
-							choix = scanner.nextLine();
-							if (choix.equals("y"))
-								j = 0;
+							if (j == 5) {
+								System.out.println("suivant y/n");
+								choix = scanner.nextLine();
+								if (choix.equals("y"))
+									j = 0;
+							}
+							count++;
+							
+							System.out.println(count + "-" + filmItem.getTitle() + "\n Synopsis:"
+									+ filmItem.getDescription() + "\n Categorie: " + filmItem.getFilm_category()
+									+ "\nAnnée de sortie: " + filmItem.getRelease_year());
+							
 						}
-						count++;
-						System.out.println(count + "-" + filmItem.getTitle() + "\n Synopsis:"
-								+ filmItem.getDescription() + "\n Categorie: " + filmItem.getFilm_category()
-								+ "\nAnnée de sortie: " + filmItem.getRelease_year());
-						
 					}
+					System.out.println("ok");
+					
 
 				}
 

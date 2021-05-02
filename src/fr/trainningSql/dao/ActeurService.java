@@ -77,6 +77,9 @@ List<Acteur> listeActeur = new ArrayList<Acteur>();
 			while(rs2.next()) {
 				Film film = new Film();
 				
+				int film_id = rs2.getInt("film.film_id");
+				film.setFilm_id(film_id);
+				
 				String film_title = rs2.getString("film.title");
 				film.setTitle(film_title); 
 				

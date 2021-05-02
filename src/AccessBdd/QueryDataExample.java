@@ -18,14 +18,14 @@ public class QueryDataExample {
 		Scanner scanner = new Scanner(System.in);
 		ActeurService acteurService = new ActeurService();
 		FilmService filmService = new FilmService();
-		while(!returnStart) {
+		while (!returnStart) {
 			System.out.println("Bonjour! Si vous voulez voir les acteurs tapez 1, pour voir les film tapez 2");
 			String choix = scanner.nextLine();
-			
+
 			switch (Integer.parseInt(choix)) {
 			case 1:
 				returnStart = true;
-				
+
 				for (Acteur acteur : acteurService.findAll()) {
 
 					System.out.println(acteur.getActor_id() + " " + acteur.getFirst_name() + " " + acteur.getLast_name()
@@ -33,7 +33,7 @@ public class QueryDataExample {
 				}
 				System.out.println("Tapez 0 si vous voulez retourner au menu principal");
 				choix = scanner.nextLine();
-				if(choix.equals("0")) {
+				if (choix.equals("0")) {
 					returnStart = false;
 				}
 				break;
@@ -43,30 +43,49 @@ public class QueryDataExample {
 
 				}
 				System.out.println("Tapez sur l'identifiant du film pour visualiser plus d'informations");
-				
+
 				choix = scanner.nextLine();
-				
-				if(Integer.parseInt(choix) == 0) {
+
+				if (Integer.parseInt(choix) == 0) {
 					returnStart = false;
-				}else {
-					
+				} else {
+					returnStart = true;
 					Film film = filmService.findById(Integer.parseInt(choix));
-					
-					System.out.println("Catégorie du film: "+film.getFilm_category()+ "\nLangage: "+film.getLanguage()+"\nListe d'acteur:\n");
-				
+
+					System.out.println("Catégorie du film: " + film.getFilm_category() + "\nLangage: "
+							+ film.getLanguage() + "\nListe d'acteur:\n");
+
 					for (Acteur acteur : film.getListeActeur()) {
-						System.out.println(acteur.getActor_id()+ "-"+acteur.getFirst_name()+" "+acteur.getLast_name());
+						System.out.println(
+								acteur.getActor_id() + "-" + acteur.getFirst_name() + " " + acteur.getLast_name());
 					}
 					System.out.println("Saisissez l'identifiant de l'acteur pour avoir plus d'information");
 					choix = scanner.nextLine();
-					
+
 					Acteur acteur = acteurService.findById(Integer.parseInt(choix));
-					
-					System.out.println(acteur.getFirst_name()+" "+acteur.getLast_name()+"\nListe des films de "+acteur.getFirst_name()+" "+acteur.getLast_name()+":");
+					boolean ok = false;
+					System.out.println(acteur.getFirst_name() + " " + acteur.getLast_name() + "\nListe des films de "
+							+ acteur.getFirst_name() + " " + acteur.getLast_name() + ":");
+
+					int j = -1;
+					int count = 0;
+
 					for (Film filmItem : acteur.getListeDefilm()) {
-						System.out.println(filmItem.getTitle()+"\n Synopsis: "+filmItem.getDescription()+"\n Categorie: "+filmItem.getFilm_category()+"\n Année de sortie: "+filmItem.getRelease_year());
+						j++;
+
+						if (j == 5) {
+							System.out.println("suivant y/n");
+							choix = scanner.nextLine();
+							if (choix.equals("y"))
+								j = 0;
+						}
+						count++;
+						System.out.println(count + "-" + filmItem.getTitle() + "\n Synopsis:"
+								+ filmItem.getDescription() + "\n Categorie: " + filmItem.getFilm_category()
+								+ "\nAnnée de sortie: " + filmItem.getRelease_year());
+						
 					}
-					
+
 				}
 
 			default:
@@ -74,7 +93,7 @@ public class QueryDataExample {
 			}
 
 		}
-		
+
 	}
 
 }

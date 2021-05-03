@@ -1,8 +1,14 @@
 package AccessBdd;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.util.ListIterator;
 import java.util.Scanner;
 
+import connexionBdd.ConnectionUtils;
 import fr.trainningSql.dao.ActeurService;
 import fr.trainningSql.dao.FilmService;
 import fr.trainningSql.model.Acteur;
@@ -15,7 +21,8 @@ public class QueryDataExample {
 		ActeurService acteurService = new ActeurService();
 		FilmService filmService = new FilmService();
 		while (!returnStart) {
-			System.out.println("Si vous voulez voir les acteurs tapez 1, pour voir les film tapez 2");
+			System.out.println(
+					"Si vous voulez voir les acteurs tapez 1, pour voir les film tapez 2, pour checher un film 3, pour chercher un acteur 4");
 			String choix = scanner.nextLine();
 
 			switch (Integer.parseInt(choix)) {
@@ -24,8 +31,8 @@ public class QueryDataExample {
 
 				for (Acteur acteur : acteurService.findAll()) {
 
-					System.out.println(acteur.getActor_id() + "- " + acteur.getFirst_name() + " " + acteur.getLast_name()
-							+ " " + acteur.getLast_update());
+					System.out.println(acteur.getActor_id() + "- " + acteur.getFirst_name() + " "
+							+ acteur.getLast_name() + " " + acteur.getLast_update());
 				}
 				System.out.println("Tapez 0 si vous voulez retourner au menu principal");
 				choix = scanner.nextLine();
@@ -48,8 +55,8 @@ public class QueryDataExample {
 					returnStart = true;
 					Film film = filmService.findById(Integer.parseInt(choix));
 
-					System.out.println("- "+film.getTitle()+"\n- Catégorie du film: " + film.getFilm_category() + "\n- Langage: "
-							+ film.getLanguage() + "\n- Liste d'acteur:\n");
+					System.out.println("- " + film.getTitle() + "\n- Catégorie du film: " + film.getFilm_category()
+							+ "\n- Langage: " + film.getLanguage() + "\n- Liste d'acteur:\n");
 
 					for (Acteur acteur : film.getListeActeur()) {
 						System.out.println(
@@ -59,43 +66,129 @@ public class QueryDataExample {
 					choix = scanner.nextLine();
 
 					Acteur acteur = acteurService.findById(Integer.parseInt(choix));
-					boolean ok = false;
-					System.out.println(acteur.getFirst_name() + " " + acteur.getLast_name() + "\nListe des films de "
-							+ acteur.getFirst_name() + " " + acteur.getLast_name() + ":");
+					try {
 
-					int j = -1;
-					int count = 0;
-					while (count != acteur.getListeDefilm().size()) {
-						for (Film filmItem : acteur.getListeDefilm()) {
-							j++;
+						Acteur acteurId = new Acteur();
 
-							if (j == 5) {
-								System.out.println("suivant y/n");
-								choix = scanner.nextLine();
-								if (choix.equals("y"))
-									j = 0;
+						Connection connection = ConnectionUtils.getMyConnection();
+
+						Statement statement = connection.createStatement();
+
+						String sql = "SELECT actor.actor_id, actor.first_name, actor.last_name,actor.last_update FROM actor "
+								+ "WHERE actor.actor_id =" + Integer.parseInt(choix) + ";";
+
+						ResultSet rs = statement.executeQuery(sql);
+
+						while (rs.next()) {
+
+							int acteur_id = rs.getInt("actor.actor_id");
+							System.out.print(acteur_id + "/");
+							acteurId.setActor_id(acteur_id);
+
+							String first_name = rs.getString("actor.first_name");
+							acteurId.setFirst_name(first_name);
+							System.out.print(first_name + " ");
+
+							String last_name = rs.getString("actor.last_name");
+							acteurId.setLast_name(last_name);
+							System.out.println(last_name);
+
+							Timestamp last_update = rs.getTimestamp("actor.last_update");
+							acteurId.setLast_update(last_update);
+							System.out.println("Mise à jour: " + last_update);
+							acteurId.ajouterFilm(film);
+						}
+						rs.close();
+
+						int page = 0;
+						boolean sortir = false;
+						while (!sortir) {
+							String sql2 = "SELECT * FROM category JOIN film_category ON category.category_id = film_category.category_id "
+									+ "JOIN film ON film_category.film_id = film.film_id JOIN film_actor ON film.film_id = film_actor.film_id "
+									+ "JOIN actor ON film_actor.actor_id = actor.actor_id JOIN language ON film.language_id = language.language_id "
+									+ "WHERE film_actor.actor_id ="
+									+ Integer.parseInt(choix) + " limit " + page + ", 5";
+
+							ResultSet rs2 = statement.executeQuery(sql2);
+							System.out.println("Liste des films:");
+
+							while (rs2.next()) {
+								System.out.println("----------------------------\n");
+								int film_id = rs2.getInt("film.film_id");
+								film.setFilm_id(film_id);
+								System.out.print(film_id + "/");
+
+								String film_title = rs2.getString("film.title");
+								film.setTitle(film_title);
+								System.out.println(film_title);
+
+								String film_langage = rs2.getString("language.name");
+								film.setLanguage(film_langage);
+								System.out.println(film_langage);
+
+								String film_description = rs2.getString("film.description");
+								film.setDescription(film_description);
+								System.out.println("Description: " + film_description);
+
+								String category = rs2.getString("category.name");
+								film.setFilm_category(category);
+								System.out.println("Catégories: " + category);
+
+								Timestamp release_year = rs2.getTimestamp("film.release_year");
+								film.setRelease_year(release_year);
+								System.out.println("Sortie: " + release_year);
+
 							}
-							count++;
-
-							System.out.println(count + "/" + filmItem.getTitle() + "\n - Categorie: "
-									+ filmItem.getFilm_category() + "\n - Synopsis:" + filmItem.getDescription()
-									+ "\n - Année de sortie: " + filmItem.getRelease_year());
+							System.out.println("prev next ou sortir");
+							String choix2 = scanner.nextLine();
+							if (choix2.equals("next")) {
+								page += 5;
+							} else if (choix2.equals("prev")) {
+								page -= 5;
+							} else if (choix2.equals("sortir")) {
+								sortir = true;
+								returnStart = false;
+							}
+							rs2.close();
 
 						}
+					} catch (ClassNotFoundException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (SQLException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
-					if (count == acteur.getListeDefilm().size()) {
-						System.out.println("Fin");
-						returnStart = false;
-					}
-
 				}
+				break;
+			case 3:
+				System.out.println("Donnez le nom du film");
+				String choixFilm = scanner.nextLine();
 
+				Film film = filmService.findByName(choixFilm);
+				System.out.println("---------------------------------");
+				System.out.println("Titre du film: " + film.getTitle() + "\nCategorie: " + film.getFilm_category()
+						+ "\nLangue originale: " + film.getLanguage() + "\nDescription: " + film.getDescription());
+				for (Acteur acteur : film.getListeActeur()) {
+					System.out.println(
+							acteur.getActor_id() + "- " + acteur.getFirst_name() + " " + acteur.getLast_name());
+				}
+				break;
+			case 4:
+				System.out.println("Donnez le nom d'un acteur");
+				String choixActeur = scanner.nextLine();
+				Acteur acteur = acteurService.findByName(choixActeur);
+				System.out.println("---------------------------------");
+				System.out.println(acteur.getFirst_name() + " " + acteur.getLast_name());
 			default:
 				break;
 			}
 
 		}
 
+	}
+	public static void pageable(String choix) {
+		
 	}
 
 }

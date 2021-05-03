@@ -7,6 +7,8 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
+
 import connexionBdd.ConnectionUtils;
 import fr.trainningSql.model.Acteur;
 import fr.trainningSql.model.Film;
@@ -37,74 +39,80 @@ List<Acteur> listeActeur = new ArrayList<Acteur>();
 
 	@Override
 	public Acteur findById(int id) {
-		
-		try {
-			Acteur acteurId = new Acteur();
-			
-			Connection connection = ConnectionUtils.getMyConnection();
+			try {
+				
+					Scanner scanner = new Scanner(System.in);
+					
+					Acteur acteurId = new Acteur();
+					
+					Connection connection = ConnectionUtils.getMyConnection();
 
-			Statement statement = connection.createStatement();
-			
-			String sql = "SELECT actor.actor_id, actor.first_name, actor.last_name,actor.last_update FROM actor "
-					+ "WHERE actor.actor_id ="+id+";";
-			
-			String sql2 = "SELECT * FROM category \r\n"
-					+ "JOIN film_category ON category.category_id = film_category.category_id \r\n"
-					+ "JOIN film ON film_category.film_id = film.film_id \r\n"
-					+ "JOIN film_actor ON film.film_id = film_actor.film_id\r\n"
-					+ "JOIN actor ON film_actor.actor_id = actor.actor_id\r\n"
-					+ "WHERE film_actor.actor_id ="+id+";";
-			
-			ResultSet rs = statement.executeQuery(sql);
-			while(rs.next()) {
-				
-				int acteur_id = rs.getInt("actor.actor_id");
-				acteurId.setActor_id(acteur_id);
-				
-				String first_name = rs.getString("actor.first_name");
-				acteurId.setFirst_name(first_name);
-				
-				String last_name = rs.getString("actor.last_name");
-				acteurId.setLast_name(last_name);
-				
-				Timestamp last_update = rs.getTimestamp("actor.last_update");
-				acteurId.setLast_update(last_update);
-			}
-			rs.close();
-			
-			ResultSet rs2 = statement.executeQuery(sql2);
-			
-			while(rs2.next()) {
-				Film film = new Film();
-				
-				int film_id = rs2.getInt("film.film_id");
-				film.setFilm_id(film_id);
-				
-				String film_title = rs2.getString("film.title");
-				film.setTitle(film_title); 
-				
-				String film_description = rs2.getString("film.description");
-				film.setDescription(film_description);
-				
-				String category = rs2.getString("category.name");
-				film.setFilm_category(category);
-				
-				Timestamp release_year = rs2.getTimestamp("film.release_year");
-				film.setRelease_year(release_year);
-				
-				acteurId.ajouterFilm(film);
-			}
-			rs2.close();
-			return acteurId;
-			
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+					Statement statement = connection.createStatement();
+					
+					String sql = "SELECT actor.actor_id, actor.first_name, actor.last_name,actor.last_update FROM actor "
+							+ "WHERE actor.actor_id ="+id+";";
+					
+					String sql2 = "SELECT * FROM category \r\n"
+							+ "JOIN film_category ON category.category_id = film_category.category_id \r\n"
+							+ "JOIN film ON film_category.film_id = film.film_id \r\n"
+							+ "JOIN film_actor ON film.film_id = film_actor.film_id\r\n"
+							+ "JOIN actor ON film_actor.actor_id = actor.actor_id\r\n"
+							+ "WHERE film_actor.actor_id ="+id+";";
+					
+					ResultSet rs = statement.executeQuery(sql);
+					
+					while(rs.next()) {
+						
+						int acteur_id = rs.getInt("actor.actor_id");
+						acteurId.setActor_id(acteur_id);
+						
+						String first_name = rs.getString("actor.first_name");
+						acteurId.setFirst_name(first_name);
+						
+						String last_name = rs.getString("actor.last_name");
+						acteurId.setLast_name(last_name);
+						
+						Timestamp last_update = rs.getTimestamp("actor.last_update");
+						acteurId.setLast_update(last_update);
+					}
+					rs.close();
+					
+					ResultSet rs2 = statement.executeQuery(sql2);
+					
+					while(rs2.next()) {
+						
+						Film film = new Film();
+						
+						int film_id = rs2.getInt("film.film_id");
+						film.setFilm_id(film_id);
+						
+						String film_title = rs2.getString("film.title");
+						film.setTitle(film_title); 
+						
+						String film_description = rs2.getString("film.description");
+						film.setDescription(film_description);
+						
+						String category = rs2.getString("category.name");
+						film.setFilm_category(category);
+						
+						Timestamp release_year = rs2.getTimestamp("film.release_year");
+						film.setRelease_year(release_year);
+						
+						acteurId.ajouterFilm(film);
+					}
+					rs2.close();
+					return acteurId;
+					
+				} catch (ClassNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		
 		return null;
+		
 	}
 
 	@Override
@@ -147,6 +155,82 @@ List<Acteur> listeActeur = new ArrayList<Acteur>();
 		}
 		// TODO Auto-generated method stub
 		return listeActeur;
+	}
+
+	@Override
+	public Acteur findByName(String o) {
+		try {
+			final String SEPARATEUR = " ";
+			String nomPrenom[] = o.split(SEPARATEUR);
+			
+			Acteur acteurName = new Acteur();
+			
+			Connection connection = ConnectionUtils.getMyConnection();
+
+			Statement statement = connection.createStatement();
+			
+			String sql = "SELECT actor.actor_id, actor.first_name, actor.last_name,actor.last_update FROM actor "
+					+ "WHERE actor.first_name ='"+nomPrenom[0]+"' AND actor.last_name = '"+nomPrenom[1]+"';";
+			
+			String sql2 = "SELECT * FROM category \r\n"
+					+ "JOIN film_category ON category.category_id = film_category.category_id \r\n"
+					+ "JOIN film ON film_category.film_id = film.film_id \r\n"
+					+ "JOIN film_actor ON film.film_id = film_actor.film_id\r\n"
+					+ "JOIN actor ON film_actor.actor_id = actor.actor_id\r\n"
+					+ "WHERE actor.first_name ='"+nomPrenom[0]+"' AND actor.last_name = '"+nomPrenom[1]+"';";
+			
+			ResultSet rs = statement.executeQuery(sql);
+			
+			while(rs.next()) {
+				
+				int acteur_id = rs.getInt("actor.actor_id");
+				acteurName.setActor_id(acteur_id);
+				
+				String first_name = rs.getString("actor.first_name");
+				acteurName.setFirst_name(first_name);
+				
+				String last_name = rs.getString("actor.last_name");
+				acteurName.setLast_name(last_name);
+				
+				Timestamp last_update = rs.getTimestamp("actor.last_update");
+				acteurName.setLast_update(last_update);
+			}
+			rs.close();
+			
+			ResultSet rs2 = statement.executeQuery(sql2);
+			
+			while(rs2.next()) {
+				
+				Film film = new Film();
+				
+				int film_id = rs2.getInt("film.film_id");
+				film.setFilm_id(film_id);
+				
+				String film_title = rs2.getString("film.title");
+				film.setTitle(film_title); 
+				
+				String film_description = rs2.getString("film.description");
+				film.setDescription(film_description);
+				
+				String category = rs2.getString("category.name");
+				film.setFilm_category(category);
+				
+				Timestamp release_year = rs2.getTimestamp("film.release_year");
+				film.setRelease_year(release_year);
+				
+				acteurName.ajouterFilm(film);
+			}
+			rs2.close();
+			return acteurName;
+			
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 }

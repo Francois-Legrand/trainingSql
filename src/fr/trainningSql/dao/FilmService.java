@@ -94,7 +94,7 @@ public class FilmService implements IDao<Film>{
 			Connection connection = ConnectionUtils.getMyConnection();
 
 			Statement statement = connection.createStatement();
-			String sql = "Select film_id, title, description, release_year from film Limit 10";
+			String sql = "Select film_id, title, description, release_year from film";
 			
 			Film film = null;
 			
@@ -125,6 +125,62 @@ public class FilmService implements IDao<Film>{
 			e.printStackTrace();
 		}
 		return listeFilm;
+	}
+
+	@Override
+	public Film findByName(String o) {
+		try {
+			Connection connection = ConnectionUtils.getMyConnection();
+
+			Statement statement = connection.createStatement();
+			
+			Film filmName = new Film();
+			
+			String filmInfos = "SELECT * FROM film JOIN film_category ON film.film_id = film_category.film_id JOIN category ON film_category.category_id = category.category_id JOIN language ON film.language_id = language.language_id WHERE film.title ='"+o+"';";
+			String tableauActeur = "SELECT actor.actor_id, actor.first_name, actor.last_name FROM `film` JOIN film_category ON film.film_id = film_category.film_id JOIN category ON film_category.category_id = category.category_id JOIN film_actor ON film.film_id = film_actor.film_id JOIN actor ON film_actor.actor_id = actor.actor_id JOIN language ON film.language_id = language.language_id "
+			+ "WHERE film.title ='"+o+"';";
+			
+			ResultSet rs = statement.executeQuery(filmInfos);
+			
+			while(rs.next()) {
+				
+				String title = rs.getString("film.title");
+				filmName.setTitle(title);
+				
+				String category = rs.getString("category.name");
+				filmName.setFilm_category(category);
+				
+				String language = rs.getString("language.name");
+				filmName.setLanguage(language);
+				String description = rs.getString("film.description");
+				filmName.setDescription(description);
+			}
+			rs.close();
+			
+			ResultSet rs2 = statement.executeQuery(tableauActeur);
+			
+			while(rs2.next()) {
+				Acteur acteur = new Acteur();
+				
+				acteur.setActor_id(Integer.parseInt(rs2.getString("actor.actor_id")));
+				
+				acteur.setFirst_name(rs2.getString("actor.first_name"));
+				
+				acteur.setLast_name(rs2.getString("actor.last_name"));
+				
+				filmName.ajouterActeur(acteur);
+			}
+			rs2.close();
+			return filmName;
+			
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 }
